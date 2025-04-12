@@ -64,7 +64,12 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
 
     private class DataLayerConstructorFixcure : Data.DataAbstractAPI
     {
-      public override void Dispose()
+            public override void Clear()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Dispose()
       { }
 
       public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
@@ -77,7 +82,12 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
     {
       internal bool Disposed = false;
 
-      public override void Dispose()
+            public override void Clear()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Dispose()
       {
         Disposed = true;
       }
@@ -103,7 +113,12 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
         upperLayerHandler(new DataVectorFixture(), new DataBallFixture());
       }
 
-      private record DataVectorFixture : Data.IVector
+            public override void Clear()
+            {
+                throw new NotImplementedException();
+            }
+
+            private record DataVectorFixture : Data.IVector
       {
         public double x { get; init; }
         public double y { get; init; }

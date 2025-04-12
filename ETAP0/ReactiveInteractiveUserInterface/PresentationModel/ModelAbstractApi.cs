@@ -19,14 +19,16 @@ namespace TP.ConcurrentProgramming.Presentation.Model
     double Diameter { get; }
   }
 
+
+
   public abstract class ModelAbstractApi : IObservable<IBall>, IDisposable
   {
     public static ModelAbstractApi CreateModel()
     {
       return modelInstance.Value;
     }
-
-    public abstract void Start(int numberOfBalls);
+        public abstract void Clear();
+        public abstract void Start(int numberOfBalls);
 
     #region IObservable
 

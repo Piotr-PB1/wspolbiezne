@@ -24,6 +24,7 @@ namespace TP.ConcurrentProgramming.PresentationView
             MainWindowViewModel viewModel = (MainWindowViewModel)DataContext;
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double screenHeight = SystemParameters.PrimaryScreenHeight;
+            viewModel.CloseAction = () => this.Close(); // akcja zamkniecia
             viewModel.Start(0);
         }
 

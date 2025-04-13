@@ -42,13 +42,21 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
             ClearCommand.RaiseCanExecuteChanged();
         }
 
-        public MainWindowViewModel() : this(ModelAbstractApi.CreateModel()) { }
+        public RelayCommand CloseCommand { get; }
+
+        public Action CloseAction { get; set; }
+
+        public MainWindowViewModel() : this(ModelAbstractApi.CreateModel()) 
+        {
+        }
 
         public MainWindowViewModel(ModelAbstractApi modelLayerAPI)
         {
             ClearCommand = new RelayCommand(
             () => ClearBalls()
             );
+
+            CloseCommand = new RelayCommand(() => CloseAction?.Invoke());   //zamknij button
 
             ModelLayer = modelLayerAPI ?? ModelAbstractApi.CreateModel();
             Observer = ModelLayer.Subscribe<ModelIBall>(x => Balls.Add(x));

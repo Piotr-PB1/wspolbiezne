@@ -27,11 +27,15 @@
             <TextBox Width="80" Margin="0,0,10,0" 
              Text="{Binding NumberOfBalls, UpdateSourceTrigger=PropertyChanged}"
              ToolTip="Enter number between 1-20"/>
-
-            <Button Content="Start Simulation" 
+            <Button Content="Add Balls and Play" 
             Command="{Binding StartCommand}"
+            Padding="15,5"
+            FontWeight="Bold"/>
+
+            <Button Content="Close Program" 
+            Command="{Binding CloseCommand}"
             Padding="15,5" 
-            Margin="0,0,10,0"
+            Margin="10,0"
             FontWeight="Bold"/>
 
             <Button Content="Clear Balls" 

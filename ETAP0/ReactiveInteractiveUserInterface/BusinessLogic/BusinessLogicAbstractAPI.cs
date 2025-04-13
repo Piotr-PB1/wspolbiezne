@@ -19,11 +19,11 @@ namespace TP.ConcurrentProgramming.BusinessLogic
       return modelInstance.Value;
     }
 
-        #endregion Layer Factory
+    #endregion Layer Factory
 
-        #region Layer API
-        public abstract void Clear();
-        public static readonly Dimensions GetDimensions = new(10.0, 10.0, 10.0);
+    #region Layer API
+
+    public static readonly Dimensions GetDimensions = new(10.0, 10.0, 10.0);
 
     public abstract void Start(int numberOfBalls, Action<IPosition, IBall> upperLayerHandler);
 

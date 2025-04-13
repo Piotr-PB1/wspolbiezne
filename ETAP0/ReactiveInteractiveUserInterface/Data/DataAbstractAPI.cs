@@ -19,11 +19,11 @@ namespace TP.ConcurrentProgramming.Data
       return modelInstance.Value;
     }
 
-        #endregion Layer Factory
+    #endregion Layer Factory
 
-        #region public API
-        public abstract void Clear();
-        public abstract void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler);
+    #region public API
+
+    public abstract void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler);
 
     #endregion public API
 

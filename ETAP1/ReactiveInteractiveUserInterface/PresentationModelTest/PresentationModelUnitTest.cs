@@ -58,11 +58,16 @@ namespace TP.ConcurrentProgramming.Presentation.Model.Test
       internal bool Disposed = false;
       internal int NumberOfBalls = 0;
 
-      #endregion testing instrumentation
+            public override void Clear()
+            {
+                throw new NotImplementedException();
+            }
 
-      #region BusinessLogicAbstractAPI
+            #endregion testing instrumentation
 
-      public override void Dispose()
+            #region BusinessLogicAbstractAPI
+
+            public override void Dispose()
       {
         Disposed = true;
       }

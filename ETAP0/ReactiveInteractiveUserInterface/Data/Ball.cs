@@ -10,8 +10,7 @@
 
 namespace TP.ConcurrentProgramming.Data
 {
-
-    internal class Ball : IBall
+  internal class Ball : IBall
   {
     #region ctor
 
@@ -31,36 +30,21 @@ namespace TP.ConcurrentProgramming.Data
 
     #endregion IBall
 
-    public Vector Position;
-
     #region private
+
+    private Vector Position;
 
     private void RaiseNewPositionChangeNotification()
     {
       NewPositionNotification?.Invoke(this, Position);
     }
 
-        //modyfikacja całego move, aby piłki mogły się odbijać od ścianek
-        internal void Move(Vector delta)
-        {
-            double newX = Position.x + delta.x;
-            double newY = Position.y + delta.y;
-
-            // Sprawdź granice i odwróć prędkość przy kolizji
-            if (newX < 0 || newX > 375)
-            {
-                delta = delta with { x = -delta.x }; // Odbicie w osi X
-            }
-            if (newY < 0 || newY > 395)
-            {
-                delta = delta with { y = -delta.y }; // Odbicie w osi Y
-            }
-
-            // Zastosuj nową pozycję
-            Position = new Vector(Position.x + delta.x, Position.y + delta.y);
-            Velocity = delta; // Aktualizuj prędkość po odbiciu
-            RaiseNewPositionChangeNotification();
-        }
-        #endregion private
+    internal void Move(Vector delta)
+    {
+      Position = new Vector(Position.x + delta.x, Position.y + delta.y);
+      RaiseNewPositionChangeNotification();
     }
+
+    #endregion private
+  }
 }

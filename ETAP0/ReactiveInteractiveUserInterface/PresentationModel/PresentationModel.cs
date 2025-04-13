@@ -49,14 +49,11 @@ namespace TP.ConcurrentProgramming.Presentation.Model
       layerBellow.Start(numberOfBalls, StartHandler);
     }
 
-        #endregion ModelAbstractApi
+    #endregion ModelAbstractApi
 
-        #region API
-        public override void Clear()
-        {
-            layerBellow.Clear();
-        }
-        public event EventHandler<BallChaneEventArgs> BallChanged;
+    #region API
+
+    public event EventHandler<BallChaneEventArgs> BallChanged;
 
     #endregion API
 

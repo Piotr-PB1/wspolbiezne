@@ -66,11 +66,16 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
       internal int Started = 0;
       internal int Subscribed = 0;
 
-      #endregion Test
+            public override void Clear()
+            {
+                throw new NotImplementedException();
+            }
 
-      #region ModelAbstractApi
+            #endregion Test
 
-      public override void Dispose()
+            #region ModelAbstractApi
+
+            public override void Dispose()
       {
         Disposed++;
       }
@@ -137,11 +142,16 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
         Disposed = true;
       }
 
-      #endregion ModelAbstractApi
+            public override void Clear()
+            {
+                throw new NotImplementedException();
+            }
 
-      #region API
+            #endregion ModelAbstractApi
 
-      public event EventHandler<BallChaneEventArgs> BallChanged;
+            #region API
+
+            public event EventHandler<BallChaneEventArgs> BallChanged;
 
       #endregion API
 

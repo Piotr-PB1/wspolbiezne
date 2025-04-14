@@ -8,11 +8,43 @@
 //
 //_____________________________________________________________________________________________________________________________________
 
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace TP.ConcurrentProgramming.BusinessLogic
 {
-  internal class Ball : IBall
-  {
-    public Ball(Data.IBall ball)
+  internal class Ball : IBall, INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private double _top;
+        private double _left;
+
+        public double Top
+        {
+            get => _top;
+            set
+            {
+                _top = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public double Left
+        {
+            get => _left;
+            set
+            {
+                _left = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public Ball(Data.IBall ball)
     {
       ball.NewPositionNotification += RaisePositionChangeEvent;
     }

@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using TP.ConcurrentProgramming.Presentation.Model;  
 using TP.ConcurrentProgramming.Presentation.ViewModel.MVVMLight;
 using static System.Net.Mime.MediaTypeNames;
@@ -16,11 +17,15 @@ using ModelIBall = TP.ConcurrentProgramming.Presentation.Model.IBall;
 
 namespace TP.ConcurrentProgramming.Presentation.ViewModel
 {
-
-
     public class MainWindowViewModel : ViewModelBase, IDisposable
     {
-        public RelayCommand ClearCommand { get; }
+        public ICommand ClearCommand { get; }
+        public ICommand StartCommand { get; }
+        public ICommand CloseCommand { get; }
+
+        private InlineCommand _startCommand;
+        private InlineCommand _clearCommand;
+
         private int _numberOfBalls;
         public int NumberOfBalls
         {
@@ -28,46 +33,36 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
             set
             {
                 _numberOfBalls = value;
-                RaisePropertyChanged();
-                StartCommand.RaiseCanExecuteChanged();
+                _startCommand?.RaiseCanExecuteChanged();
             }
         }
 
-        public RelayCommand StartCommand { get; }
-
-        public void ClearBalls()
-        {
-            ModelLayer.Clear();
-            Balls.Clear();
-            ClearCommand.RaiseCanExecuteChanged();
-        }
-
-        public RelayCommand CloseCommand { get; }
+        public ObservableCollection<ModelIBall> Balls { get; } = new ObservableCollection<ModelIBall>();
 
         public Action CloseAction { get; set; }
 
-        public MainWindowViewModel() : this(ModelAbstractApi.CreateModel()) 
-        {
-        }
+        private IDisposable Observer;
+        private ModelAbstractApi ModelLayer;
+        private bool Disposed = false;
+
+        public MainWindowViewModel() : this(ModelAbstractApi.CreateModel()) { }
 
         public MainWindowViewModel(ModelAbstractApi modelLayerAPI)
         {
-            ClearCommand = new RelayCommand(
-            () => ClearBalls()
-            );
-
-            CloseCommand = new RelayCommand(() => CloseAction?.Invoke());   //zamknij button
-
             ModelLayer = modelLayerAPI ?? ModelAbstractApi.CreateModel();
             Observer = ModelLayer.Subscribe<ModelIBall>(x => Balls.Add(x));
-            StartCommand = new RelayCommand(
-                () => Start(NumberOfBalls),
-                () => NumberOfBalls > 0 && NumberOfBalls <= 20
+
+            _clearCommand = new InlineCommand(_ => ClearBalls(), _ => true);
+            ClearCommand = _clearCommand;
+
+            _startCommand = new InlineCommand(
+                _ => Start(NumberOfBalls),
+                _ => NumberOfBalls > 0 && NumberOfBalls <= 20
             );
+            StartCommand = _startCommand;
 
+            CloseCommand = new InlineCommand(_ => CloseAction?.Invoke(), _ => true);
         }
-
-        public ObservableCollection<ModelIBall> Balls { get; } = new ObservableCollection<ModelIBall>();
 
         public void Start(int numberOfBalls)
         {
@@ -76,9 +71,20 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
             ModelLayer.Start(numberOfBalls);
         }
 
-        private IDisposable Observer = null;
-        private ModelAbstractApi ModelLayer;
-        private bool Disposed = false;
+        public void ClearBalls()
+        {
+            ModelLayer.Clear();
+            Balls.Clear();
+            _clearCommand?.RaiseCanExecuteChanged();
+        }
+
+        public void Dispose()
+        {
+            if (Disposed)
+                throw new ObjectDisposedException(nameof(MainWindowViewModel));
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -93,13 +99,25 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
                 Disposed = true;
             }
         }
+    }
 
-        public void Dispose()
+    public class InlineCommand : ICommand
+    {
+        private readonly Action<object> _execute;
+        private readonly Func<object, bool> _canExecute;
+
+        public InlineCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
-            if (Disposed)
-                throw new ObjectDisposedException(nameof(MainWindowViewModel));
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            _execute = execute;
+            _canExecute = canExecute ?? (_ => true);
         }
+
+        public event EventHandler CanExecuteChanged;
+
+        public bool CanExecute(object parameter) => _canExecute(parameter);
+
+        public void Execute(object parameter) => _execute(parameter);
+
+        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

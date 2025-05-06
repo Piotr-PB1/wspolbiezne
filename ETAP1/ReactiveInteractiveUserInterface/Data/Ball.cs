@@ -30,10 +30,11 @@ namespace TP.ConcurrentProgramming.Data
     public event EventHandler<IVector>? NewPositionNotification;
 
     public IVector Velocity { get; set; }
+        public int Mass { get; }
 
-    #endregion IBall
+        #endregion IBall
 
-    public Vector Position;
+        public Vector Position;
 
     #region private
 

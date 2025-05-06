@@ -38,7 +38,7 @@ namespace TP.ConcurrentProgramming.Data
                     (random.NextDouble() - 0.5) * 5  // Prędkość Y (-2.5 do 2.5)
                 );
 
-                Ball newBall = new(startingPosition, initialVector);
+                Ball newBall = new(startingPosition, initialVector, 1);
                 BallsList.Add(newBall);
                 upperLayerHandler(startingPosition, newBall);
 

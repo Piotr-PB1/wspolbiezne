@@ -10,58 +10,36 @@
 
 namespace TP.ConcurrentProgramming.Data
 {
-
     internal class Ball : IBall
-  {
-    #region ctor
-
-    internal Ball(Vector initialPosition, Vector initialVelocity, int mass)
     {
-      Position = initialPosition;
-      Velocity = initialVelocity;
-      Mass = mass;
+        #region ctor
+        internal Ball(Vector initialPosition, Vector initialVelocity, int mass)
+        {
+            Position = initialPosition;
+            Velocity = initialVelocity;
+            Mass = mass;
+        }
+        #endregion ctor
 
-    }
-
-    #endregion ctor
-
-    #region IBall
-
-    public event EventHandler<IVector>? NewPositionNotification;
-
-    public IVector Velocity { get; set; }
+        #region IBall
+        public event EventHandler<IVector>? NewPositionNotification;
+        public IVector Velocity { get; set; }
         public int Mass { get; }
-
         #endregion IBall
 
         public Vector Position;
 
-    #region private
+        #region private
+        private void RaiseNewPositionChangeNotification()
+        {
+            NewPositionNotification?.Invoke(this, Position);
+        }
 
-    private void RaiseNewPositionChangeNotification()
-    {
-      NewPositionNotification?.Invoke(this, Position);
-    }
-
-        //modyfikacja całego move, aby piłki mogły się odbijać od ścianek
+        // Zmieniona metoda Move – tylko przesuwa kulkę bez logiki kolizji ze ścianą:
         internal void Move(Vector delta)
         {
-            double newX = Position.x + delta.x;
-            double newY = Position.y + delta.y;
-
-            // Sprawdź granice i odwróć prędkość przy kolizji
-            if (newX < 0 || newX > 375)
-            {
-                delta = delta with { x = -delta.x }; // Odbicie w osi X
-            }
-            if (newY < 0 || newY > 395)
-            {
-                delta = delta with { y = -delta.y }; // Odbicie w osi Y
-            }
-
-            // Zastosuj nową pozycję
             Position = new Vector(Position.x + delta.x, Position.y + delta.y);
-            Velocity = delta; // Aktualizuj prędkość po odbiciu
+            Velocity = delta;
             RaiseNewPositionChangeNotification();
         }
         #endregion private

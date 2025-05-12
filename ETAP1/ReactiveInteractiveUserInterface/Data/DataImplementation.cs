@@ -16,6 +16,7 @@ namespace TP.ConcurrentProgramming.Data
 {
     internal class DataImplementation : DataAbstractAPI
     {
+        private readonly Dictionary<Ball, TP.ConcurrentProgramming.BusinessLogic.Ball> ballMapping = new();
         private readonly ConcurrentBag<Ball> BallsList = new();
         private readonly List<Thread> BallThreads = new();
         private readonly List<bool> BallThreadFlags = new(); // Flagi do kontrolowania wątków
@@ -44,6 +45,10 @@ namespace TP.ConcurrentProgramming.Data
                 BallsList.Add(newBall);
                 upperLayerHandler(startingPosition, newBall);
 
+                // Tworzenie powiązanego obiektu logiki
+                var logicBall = new TP.ConcurrentProgramming.BusinessLogic.Ball(newBall);
+                ballMapping[newBall] = logicBall;
+
                 // Flaga kontrolująca działanie wątków
                 BallThreadFlags.Add(true);
 
@@ -66,9 +71,20 @@ namespace TP.ConcurrentProgramming.Data
                     lock (BallsList)
                     {
                         Console.WriteLine($"[Wątek {index}] Przed ruchem: Pozycja=({ball.Position.x}, {ball.Position.y}), Prędkość=({ball.Velocity.x}, {ball.Velocity.y})");
+
+                        // Wywołanie ruchu kulki w warstwie danych (bez obsługi odbić od ścian)
                         ball.Move(new Vector(ball.Velocity.x, ball.Velocity.y));
+
+                        // Wywołanie logiki odbicia od ścian z warstwy logiki
+                        if (ballMapping.TryGetValue(ball, out TP.ConcurrentProgramming.BusinessLogic.Ball logicBall))
+                        {
+                            // Ustawiamy granice planszy (np. 0, 0, 375, 395)
+                            logicBall.HandleWallCollision(0, 0, 375, 395);
+                        }
+
                         Console.WriteLine($"[Wątek {index}] Po ruchu: Pozycja=({ball.Position.x}, {ball.Position.y}), Prędkość=({ball.Velocity.x}, {ball.Velocity.y})");
 
+                        // Inne kolizje (np. z innymi kulkami)
                         CheckCollisions(ball);
                     }
 

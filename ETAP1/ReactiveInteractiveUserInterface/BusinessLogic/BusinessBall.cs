@@ -12,6 +12,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using TP.ConcurrentProgramming.Data;
+using System;
 
 namespace TP.ConcurrentProgramming.BusinessLogic
 {
@@ -62,7 +63,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 
         public event EventHandler<IPosition>? NewPositionNotification;
 
-        // Nowa metoda do obliczania kolizji
+        // Metoda obliczająca kolizję z inną kulką
         public (IVector newVelocity, IVector otherNewVelocity) CalculateCollision(Ball otherBall)
         {
             double dx = otherBall.Left - this.Left;
@@ -97,6 +98,34 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             );
 
             return (newAVelocity, newBVelocity);
+        }
+
+        // Nowa metoda – logika odbicia od ścian w warstwie logiki
+        public void HandleWallCollision(double minX, double minY, double maxX, double maxY)
+        {
+            // Odbicie od lewej/prawej ściany
+            if (Left < minX)
+            {
+                Left = minX;
+                Velocity = new Vector(-Velocity.x, Velocity.y);
+            }
+            else if (Left + Diameter > maxX)
+            {
+                Left = maxX - Diameter;
+                Velocity = new Vector(-Velocity.x, Velocity.y);
+            }
+
+            // Odbicie od górnej/dolnej ściany
+            if (Top < minY)
+            {
+                Top = minY;
+                Velocity = new Vector(Velocity.x, -Velocity.y);
+            }
+            else if (Top + Diameter > maxY)
+            {
+                Top = maxY - Diameter;
+                Velocity = new Vector(Velocity.x, -Velocity.y);
+            }
         }
     }
 }

@@ -11,6 +11,7 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using TP.ConcurrentProgramming.Data;
 
 namespace TP.ConcurrentProgramming.BusinessLogic
 {

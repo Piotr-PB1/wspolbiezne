@@ -23,8 +23,10 @@ namespace TP.ConcurrentProgramming.Data
 
         public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
         {
-            if (Disposed)
-                throw new ObjectDisposedException(nameof(DataImplementation));
+            CheckObjectDisposed();
+            CheckNumberOfBalls(numberOfBalls);
+            CheckBallsList();
+
             if (upperLayerHandler == null)
                 throw new ArgumentNullException(nameof(upperLayerHandler));
 
@@ -42,7 +44,7 @@ namespace TP.ConcurrentProgramming.Data
                 BallsList.Add(newBall);
                 upperLayerHandler(startingPosition, newBall);
 
-                // Flaga kontrolująca działanie wątku
+                // Flaga kontrolująca działanie wątków
                 BallThreadFlags.Add(true);
 
                 // Tworzenie i uruchamianie wątku dla kulki
@@ -83,107 +85,24 @@ namespace TP.ConcurrentProgramming.Data
             }
         }
 
-        private void CheckCollisions(Ball ball)
+        public void CheckBallsList()
         {
-            foreach (var otherBall in BallsList)
-            {
-                if (ball != otherBall && CheckCollision(ball, otherBall))
-                {
-                    ResolveCollision(ball, otherBall);
-                }
-            }
+            if (BallsList == null || !BallsList.Any())
+                throw new InvalidOperationException("Lista kulek jest pusta lub niezainicjalizowana.");
         }
 
-        private bool CheckCollision(Ball a, Ball b)
+        public void CheckNumberOfBalls(int numberOfBalls)
         {
-            double dx = a.Position.x - b.Position.x;
-            double dy = a.Position.y - b.Position.y;
-            double distanceSquared = dx * dx + dy * dy;
-            return distanceSquared < (20 * 20); // Średnica kulki to 20, więc promień 10
+            if (numberOfBalls <= 0)
+                throw new ArgumentOutOfRangeException(nameof(numberOfBalls), "Liczba kulek musi być większa od zera.");
         }
 
-        private void ResolveCollision(Ball a, Ball b)
+        public void CheckObjectDisposed()
         {
-            double dx = b.Position.x - a.Position.x;
-            double dy = b.Position.y - a.Position.y;
-            double distance = Math.Sqrt(dx * dx + dy * dy);
-            if (distance == 0) return;
-
-            // Wektor normalny kolizji (od A do B)
-            Vector n = new Vector(dx / distance, dy / distance);
-            Vector t = new Vector(-n.y, n.x); // Wektor styczny
-
-            // Rozkład prędkości na składowe
-            double vA_n = a.Velocity.x * n.x + a.Velocity.y * n.y;
-            double vA_t = a.Velocity.x * t.x + a.Velocity.y * t.y;
-
-            double vB_n = b.Velocity.x * n.x + b.Velocity.y * n.y;
-            double vB_t = b.Velocity.x * t.x + b.Velocity.y * t.y;
-
-            // Uwzględnienie mas w obliczeniach odbicia sprężystego
-            double vA_new_n = (vA_n * (a.Mass - b.Mass) + 2 * b.Mass * vB_n) / (a.Mass + b.Mass);
-            double vB_new_n = (vB_n * (b.Mass - a.Mass) + 2 * a.Mass * vA_n) / (a.Mass + b.Mass);
-
-            // Nowe wektory prędkości
-            Vector newAVelocity = new Vector(
-                vA_new_n * n.x + vA_t * t.x,
-                vA_new_n * n.y + vA_t * t.y
-            );
-
-            Vector newBVelocity = new Vector(
-                vB_new_n * n.x + vB_t * t.x,
-                vB_new_n * n.y + vB_t * t.y
-            );
-
-            a.Velocity = newAVelocity;
-            b.Velocity = newBVelocity;
-
-            // Korekcja pozycji (opcjonalnie, aby uniknąć zakleszczenia)
-            double overlap = 20 - distance; // 20 to średnica kulki
-            if (overlap > 0)
-            {
-                double adjust = overlap * 0.5;
-                a.Position = new Vector(a.Position.x - n.x * adjust, a.Position.y - n.y * adjust);
-                b.Position = new Vector(b.Position.x + n.x * adjust, b.Position.y + n.y * adjust);
-            }
+            if (Disposed)
+                throw new ObjectDisposedException(nameof(DataImplementation), "Obiekt został już zniszczony.");
         }
 
-        public override void Clear()
-        {
-            for (int i = 0; i < BallThreadFlags.Count; i++)
-            {
-                BallThreadFlags[i] = false;
-            }
 
-            foreach (var thread in BallThreads)
-            {
-                if (thread.IsAlive)
-                {
-                    thread.Join();
-                }
-            }
-
-            BallsList.Clear();
-            BallThreads.Clear();
-            BallThreadFlags.Clear();
-        }
-
-        public override void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!Disposed)
-            {
-                if (disposing)
-                {
-                    Clear();
-                }
-                Disposed = true;
-            }
-        }
     }
 }

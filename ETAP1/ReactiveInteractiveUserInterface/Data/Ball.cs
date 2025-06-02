@@ -12,35 +12,36 @@ namespace TP.ConcurrentProgramming.Data
 {
 
     internal class Ball : IBall
-  {
-    #region ctor
-
-    internal Ball(Vector initialPosition, Vector initialVelocity, int mass)
     {
-      Position = initialPosition;
-      Velocity = initialVelocity;
-      Mass = mass;
+        #region ctor
 
-    }
+        internal Ball(Vector initialPosition, Vector initialVelocity, int mass)
+        {
+            Position = initialPosition;
+            Velocity = initialVelocity;
+            Mass = mass;
 
-    #endregion ctor
+        }
 
-    #region IBall
+        #endregion ctor
 
-    public event EventHandler<IVector>? NewPositionNotification;
+        #region IBall
 
-    public IVector Velocity { get; set; }
+        public event EventHandler<IVector>? NewPositionNotification;
 
-    #endregion IBall
+        public IVector Velocity { get; set; }
 
-    public Vector Position;
+        #endregion IBall
 
-    #region private
+        public Vector Position;
+        public int Mass { get; init; } = 1; // Default mass
 
-    private void RaiseNewPositionChangeNotification()
-    {
-      NewPositionNotification?.Invoke(this, Position);
-    }
+        #region private
+
+        private void RaiseNewPositionChangeNotification()
+        {
+            NewPositionNotification?.Invoke(this, Position);
+        }
 
         //modyfikacja całego move, aby piłki mogły się odbijać od ścianek
         internal void Move(Vector delta)

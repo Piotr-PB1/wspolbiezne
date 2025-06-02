@@ -9,8 +9,11 @@
 //_____________________________________________________________________________________________________________________________________
 
 using System;
-using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text;
+using System.Timers;
+using UnderneathLayerAPI = TP.ConcurrentProgramming.Data.DataAbstractAPI;
 
 namespace TP.ConcurrentProgramming.Data
 {
@@ -20,6 +23,33 @@ namespace TP.ConcurrentProgramming.Data
         private readonly List<Thread> BallThreads = new();
         private readonly List<bool> BallThreadFlags = new(); // Flagi do kontrolowania wątków
         private bool Disposed = false;
+        private object _lock = new();
+        private string _outputFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ballData.xml");
+        private System.Timers.Timer timerForBalls;
+
+        private void LogBallsState(object? sender, ElapsedEventArgs? e)
+        {
+
+            try
+            {
+                string txtFilePath = Path.ChangeExtension(_outputFilePath, ".txt");
+                using (StreamWriter writer = new(txtFilePath, true, Encoding.UTF8))
+                {
+                    lock (BallsList)
+                    {
+                        foreach (var ball in BallsList)
+                        {
+                            writer.WriteLine($"Współrzędne: {ball.Position}, Wektor prędkości: {ball.Velocity}, Masa kuli: {ball.Mass}");
+                        }
+                    }
+                    writer.WriteLine("");
+                }
+            }
+            catch (IOException ioEx)
+            {
+                Debug.WriteLine($"Failed to save balls data: {ioEx.Message}");
+            }
+        }
 
         public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
         {
@@ -38,7 +68,7 @@ namespace TP.ConcurrentProgramming.Data
                     (random.NextDouble() - 0.5) * 5  // Prędkość Y (-2.5 do 2.5)
                 );
 
-                Ball newBall = new(startingPosition, initialVector);
+                Ball newBall = new(startingPosition, initialVector, mass);
                 BallsList.Add(newBall);
                 upperLayerHandler(startingPosition, newBall);
 
@@ -51,6 +81,12 @@ namespace TP.ConcurrentProgramming.Data
                 BallThreads.Add(ballThread);
                 ballThread.Start();
             }
+
+            timerForBalls = new System.Timers.Timer(interval: 10000);
+            timerForBalls.AutoReset = true;
+            timerForBalls.Elapsed += LogBallsState;
+            timerForBalls.Start();
+
         }
 
         private void MoveBall(Ball ball, int index)
@@ -170,20 +206,61 @@ namespace TP.ConcurrentProgramming.Data
 
         public override void Dispose()
         {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+
+
+            lock (BallsList)
+            {
+
+                if (timerForBalls != null)
+                {
+                    timerForBalls.Dispose();
+                    timerForBalls = null;
+                }
+
+                // Zatrzymaj wszystkie wątki
+                for (int i = 0; i < BallThreadFlags.Count; i++)
+                {
+                    BallThreadFlags[i] = false;
+                }
+
+                // Poczekaj na zakończenie wszystkich wątków
+                foreach (var thread in BallThreads)
+                {
+                    if (thread.IsAlive)
+                    {
+                        thread.Join();
+                    }
+                }
+
+                // Wyczyść kolekcje
+                while (!BallsList.IsEmpty)
+                {
+                    BallsList.TryTake(out _);
+                }
+                BallThreads.Clear();
+                BallThreadFlags.Clear();
+            }
         }
 
-        protected virtual void Dispose(bool disposing)
+        internal void CheckBallsList(Action<IEnumerable<IBall>> callback)
         {
-            if (!Disposed)
+            lock (_lock)
             {
-                if (disposing)
-                {
-                    Clear();
-                }
-                Disposed = true;
+                callback(BallsList.ToArray());
             }
+        }
+
+        internal void CheckNumberOfBalls(Action<int> callback)
+        {
+            lock (_lock)
+            {
+                callback(BallsList.Count);
+            }
+        }
+
+        internal void CheckObjectDisposed(Action<bool> callback)
+        {
+            callback(Disposed);
         }
     }
 }
